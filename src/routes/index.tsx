@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { Lock, Store, Bike, Search, ShoppingCart, Star, Plus, Minus, Phone, MapPin, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { money, useStore } from "@/lib/tkg/store";
-import type { Item, Order, OrderLine } from "@/lib/tkg/types";
+import type { Item, Order } from "@/lib/tkg/types";
+import { useCart } from "@/lib/tkg/cart";
 import { LoginModals, type PanelKind } from "@/components/tkg/LoginModals";
 import { Receipt } from "@/components/tkg/Receipt";
 import { toast } from "sonner";
@@ -36,18 +37,21 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { checkout?: boolean } =>
+    search["checkout"] === "1" || search["checkout"] === true ? { checkout: true } : {},
   component: Storefront,
 });
 
 function Storefront() {
   const { db, placeOrder } = useStore();
+  const { cart, setCart, clear } = useCart();
+  const navigate = useNavigate();
+  const search = Route.useSearch();
   const { settings, categories, shops, items } = db;
 
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState("all");
   const [shopFilter, setShopFilter] = useState("all");
-  const [detail, setDetail] = useState<Item | null>(null);
-  const [cart, setCart] = useState<OrderLine[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
   const [placed, setPlaced] = useState<Order | null>(null);
@@ -75,6 +79,13 @@ function Storefront() {
   const cartShopId = cart.length ? items.find((i) => i.id === cart[0]!.itemId)?.shopId : undefined;
   const subtotal = cart.reduce((s, l) => s + l.price * l.qty, 0);
   const total = subtotal + (cart.length ? settings.deliveryCharge : 0);
+
+  useEffect(() => {
+    if (search.checkout && cart.length) {
+      setCheckout(true);
+      void navigate({ to: "/", search: {}, replace: true });
+    }
+  }, [search.checkout, cart.length, navigate]);
 
   const addToCart = (item: Item) => {
     if (!item.inStock) return;
@@ -113,7 +124,7 @@ function Storefront() {
       delivery: settings.deliveryCharge,
       total,
     });
-    setCart([]);
+    clear();
     setCheckout(false);
     setCartOpen(false);
     setPlaced(order);
@@ -195,9 +206,6 @@ function Storefront() {
 
       <section className="mx-auto max-w-6xl px-4 py-5">
         <div className="mb-5 overflow-hidden rounded-2xl brand-gradient p-5 glow">
-          <h2 className="text-xl font-extrabold text-primary-foreground sm:text-3xl">
-            Hot & fresh, delivered across {settings.location}
-          </h2>
           <p className="mt-1 text-sm text-primary-foreground/80">
             {shops.filter((s) => s.active).length} restaurants · {items.length} dishes · Cash on
             delivery
@@ -213,9 +221,9 @@ function Storefront() {
                 key={item.id}
                 className="group overflow-hidden rounded-xl border border-border bg-card transition hover:border-primary/60"
               >
-                <button
-                  type="button"
-                  onClick={() => setDetail(item)}
+                <Link
+                  to="/item/$id"
+                  params={{ id: item.id }}
                   className="block w-full text-left"
                 >
                   <img
@@ -235,7 +243,7 @@ function Storefront() {
                       </span>
                     </div>
                   </div>
-                </button>
+                </Link>
                 <div className="px-3 pb-3">
                   <Button
                     size="sm"
@@ -276,45 +284,6 @@ function Storefront() {
       </footer>
 
       <LoginModals open={panel} onOpenChange={setPanel} />
-
-      {/* Product detail */}
-      <Dialog open={detail !== null} onOpenChange={(v) => !v && setDetail(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
-          {detail && (
-            <>
-              <img
-                src={detail.image}
-                alt={detail.name}
-                className="h-48 w-full rounded-lg object-cover"
-              />
-              <DialogHeader>
-                <DialogTitle>{detail.name}</DialogTitle>
-                <DialogDescription>{shopName(detail.shopId)}</DialogDescription>
-              </DialogHeader>
-              <p className="text-sm text-muted-foreground">{detail.description}</p>
-              <div>
-                <p className="text-xs font-semibold">Ingredients</p>
-                <p className="text-xs text-muted-foreground">{detail.ingredients}</p>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xl font-bold text-primary">{money(detail.price)}</span>
-                <Badge variant={detail.inStock ? "default" : "secondary"}>
-                  {detail.inStock ? "In stock" : "Out of stock"}
-                </Badge>
-              </div>
-              <Button
-                disabled={!detail.inStock}
-                onClick={() => {
-                  addToCart(detail);
-                  setDetail(null);
-                }}
-              >
-                Add to cart
-              </Button>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Cart */}
       <Dialog open={cartOpen} onOpenChange={setCartOpen}>
@@ -357,7 +326,7 @@ function Storefront() {
                 <Row label="Total (COD)" value={money(total)} bold />
               </div>
               <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => setCart([])}>
+                <Button variant="secondary" onClick={() => clear()}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
                 <Button className="flex-1" onClick={() => setCheckout(true)}>

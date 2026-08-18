@@ -36,14 +36,38 @@ export function Receipt({
   settings: Settings;
 }) {
   const download = () => {
-    const blob = new Blob([receiptText(order, shop, settings)], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${order.id}-cash-memo.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const text = receiptText(order, shop, settings);
+    const lines = text.split("\n");
+    const scale = 2;
+    const padding = 24;
+    const lineHeight = 20;
+    const width = 460;
+    const height = padding * 2 + lines.length * lineHeight;
+    const canvas = document.createElement("canvas");
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = "#111111";
+    ctx.textBaseline = "top";
+    lines.forEach((line, i) => {
+      ctx.font = i === 0 ? "bold 16px monospace" : "13px monospace";
+      ctx.fillText(line, padding, padding + i * lineHeight);
+    });
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${order.id}-cash-memo.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }, "image/png");
   };
+
 
   return (
     <div className="space-y-4">
