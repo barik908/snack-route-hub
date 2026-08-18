@@ -18,9 +18,15 @@ export const Route = createFileRoute("/rider")({
   head: () => ({
     meta: [
       { title: "Rider Panel — TKG Snacks" },
-      { name: "description", content: "Delivery rider dashboard with assigned orders and navigation." },
+      {
+        name: "description",
+        content: "Delivery rider dashboard with assigned orders and navigation.",
+      },
       { property: "og:title", content: "Rider Panel — TKG Snacks" },
-      { property: "og:description", content: "Track assigned deliveries, COD amounts and navigation." },
+      {
+        property: "og:description",
+        content: "Track assigned deliveries, COD amounts and navigation.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -34,9 +40,7 @@ function RiderPanel() {
   const orders = db.orders.filter((o) => o.riderId === riderId);
   const activeOrders = orders.filter((o) => o.status !== "Delivered" && o.status !== "Cancelled");
   const available = db.orders.filter((o) => o.status === "Ready for Pickup" && !o.riderId);
-  const cash = orders
-    .filter((o) => o.status === "Delivered")
-    .reduce((s, o) => s + o.total, 0);
+  const cash = orders.filter((o) => o.status === "Delivered").reduce((s, o) => s + o.total, 0);
 
   return (
     <PanelShell title={rider?.name ?? "Rider"} subtitle="Delivery dashboard" allow="rider">

@@ -51,12 +51,15 @@ function AdminPanel() {
   const activeOrders = db.orders.filter((o) => o.status !== "Delivered");
   const historyOrders = db.orders.filter((o) => o.status === "Delivered");
 
-
   if (shopMode) {
     const shop = db.shops.find((s) => s.id === shopMode);
     if (!shop) return null;
     return (
-      <PanelShell title={`Shop mode · ${shop.name}`} subtitle="Direct store management" allow="admin">
+      <PanelShell
+        title={`Shop mode · ${shop.name}`}
+        subtitle="Direct store management"
+        allow="admin"
+      >
         <Button variant="secondary" size="sm" className="mb-4" onClick={() => setShopMode(null)}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to stores
         </Button>
@@ -83,7 +86,6 @@ function AdminPanel() {
           <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
-
 
         <TabsContent value="stores" className="mt-4 space-y-4">
           <AddShop />
@@ -121,7 +123,9 @@ function AdminPanel() {
                       checked={shop.active}
                       onCheckedChange={(v) =>
                         update((d) => {
-                          d.shops = d.shops.map((s) => (s.id === shop.id ? { ...s, active: v } : s));
+                          d.shops = d.shops.map((s) =>
+                            s.id === shop.id ? { ...s, active: v } : s,
+                          );
                           return d;
                         })
                       }
@@ -186,7 +190,6 @@ function AdminPanel() {
             ))}
           </div>
         </TabsContent>
-
 
         <TabsContent value="categories" className="mt-4 space-y-3">
           <form
@@ -452,9 +455,7 @@ export function ShopManager({ shopId }: { shopId: string }) {
   const { db, update } = useStore();
   const items = db.items.filter((i) => i.shopId === shopId);
   const orders = db.orders.filter((o) => o.shopId === shopId);
-  const sales = orders
-    .filter((o) => o.status === "Delivered")
-    .reduce((s, o) => s + o.total, 0);
+  const sales = orders.filter((o) => o.status === "Delivered").reduce((s, o) => s + o.total, 0);
 
   const patch = (id: string, p: Partial<Item>) =>
     update((d) => {
@@ -585,9 +586,7 @@ function RiderCard({ rider }: { rider: Rider }) {
 
   const orders = db.orders.filter((o) => o.riderId === rider.id);
   const deliveredCount = orders.filter((o) => o.status === "Delivered").length;
-  const cash = orders
-    .filter((o) => o.status === "Delivered")
-    .reduce((s, o) => s + o.total, 0);
+  const cash = orders.filter((o) => o.status === "Delivered").reduce((s, o) => s + o.total, 0);
 
   return (
     <div className="rounded-xl border border-border bg-card p-3">
@@ -660,10 +659,7 @@ function RiderCard({ rider }: { rider: Rider }) {
             />
           </Labeled>
           <Labeled label="Status">
-            <Select
-              value={rider.status}
-              onValueChange={(v) => patch({ status: v as RiderStatus })}
-            >
+            <Select value={rider.status} onValueChange={(v) => patch({ status: v as RiderStatus })}>
               <SelectTrigger className="h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>

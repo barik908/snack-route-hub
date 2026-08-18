@@ -1,6 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Lock, Store, Bike, Search, ShoppingCart, Star, Plus, Minus, Phone, MapPin, Trash2 } from "lucide-react";
+import {
+  Lock,
+  Store,
+  Bike,
+  Search,
+  ShoppingCart,
+  Star,
+  Plus,
+  Minus,
+  Phone,
+  MapPin,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -93,8 +105,7 @@ function Storefront() {
     }
     setCart((prev) => {
       const found = prev.find((l) => l.itemId === item.id);
-      if (found)
-        return prev.map((l) => (l.itemId === item.id ? { ...l, qty: l.qty + 1 } : l));
+      if (found) return prev.map((l) => (l.itemId === item.id ? { ...l, qty: l.qty + 1 } : l));
       return [...prev, { itemId: item.id, name: item.name, price: item.price, qty: 1 }];
     });
     toast.success(`${item.name} added to cart`);
@@ -135,7 +146,11 @@ function Storefront() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               {settings.logoUrl ? (
-                <img src={settings.logoUrl} alt="Logo" className="h-9 w-9 rounded-lg object-cover" />
+                <img
+                  src={settings.logoUrl}
+                  alt="Logo"
+                  className="h-9 w-9 rounded-lg object-cover"
+                />
               ) : (
                 <div className="grid h-9 w-9 place-items-center rounded-lg brand-gradient text-lg">
                   🍔
@@ -183,7 +198,6 @@ function Storefront() {
         </div>
       </header>
 
-
       <section className="mx-auto max-w-6xl px-4 py-5">
         <div className="mb-5 overflow-hidden rounded-2xl brand-gradient p-5 glow">
           <p className="mt-1 text-sm text-primary-foreground/80">
@@ -201,11 +215,7 @@ function Storefront() {
                 key={item.id}
                 className="group overflow-hidden rounded-xl border border-border bg-card transition hover:border-primary/60"
               >
-                <Link
-                  to="/item/$id"
-                  params={{ id: item.id }}
-                  className="block w-full text-left"
-                >
+                <Link to="/item/$id" params={{ id: item.id }} className="block w-full text-left">
                   <img
                     src={item.image}
                     alt={item.name}
@@ -289,11 +299,21 @@ function Storefront() {
                       <p className="text-xs text-muted-foreground">{money(l.price)}</p>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button size="icon" variant="secondary" className="h-7 w-7" onClick={() => setQty(l.itemId, -1)}>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-7 w-7"
+                        onClick={() => setQty(l.itemId, -1)}
+                      >
                         <Minus className="h-3 w-3" />
                       </Button>
                       <span className="w-6 text-center text-sm">{l.qty}</span>
-                      <Button size="icon" variant="secondary" className="h-7 w-7" onClick={() => setQty(l.itemId, 1)}>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-7 w-7"
+                        onClick={() => setQty(l.itemId, 1)}
+                      >
                         <Plus className="h-3 w-3" />
                       </Button>
                     </div>
