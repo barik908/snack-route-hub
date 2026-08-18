@@ -130,22 +130,53 @@ function RiderPanel() {
                   {o.status}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground">Pickup: {shop?.name}</p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <div className="rounded-lg border border-border p-2">
+                  <p className="text-[11px] font-semibold text-accent">FROM · Restaurant</p>
+                  <p className="text-sm font-medium">{shop?.name}</p>
+                  <p className="text-xs text-muted-foreground">{shop?.ownerPhone}</p>
+                  <p className="text-xs text-muted-foreground">{shop?.address}</p>
+                  {shop && (
+                    <div className="mt-2 flex gap-2">
+                      <Button size="sm" variant="secondary" asChild>
+                        <a href={`tel:${shop.ownerPhone}`}>
+                          <Phone className="mr-2 h-3 w-3" /> Call shop
+                        </a>
+                      </Button>
+                      <Button size="sm" variant="secondary" asChild>
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                            `${shop.address} ${db.settings.location}`,
+                          )}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <Map className="mr-2 h-3 w-3" /> Pickup map
+                        </a>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-lg border border-border p-2">
+                  <p className="text-[11px] font-semibold text-accent">TO · Customer</p>
+                  <p className="text-sm font-medium">{o.customerName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {o.phone}
+                    {o.phone2 ? ` / ${o.phone2}` : ""}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {o.address}
+                    {o.landmark ? ` (near ${o.landmark})` : ""}
+                  </p>
+                </div>
+              </div>
               <div className="mt-2 space-y-0.5 text-sm">
-                <p className="font-medium">{o.customerName}</p>
-                <p className="text-xs text-muted-foreground">
-                  {o.phone}
-                  {o.phone2 ? ` / ${o.phone2}` : ""}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {o.address}
-                  {o.landmark ? ` (near ${o.landmark})` : ""}
-                </p>
                 <p className="text-xs text-muted-foreground">
                   {o.lines.map((l) => `${l.qty}x ${l.name}`).join(", ")}
                 </p>
                 <p className="font-bold text-primary">Collect {money(o.total)} cash</p>
               </div>
+
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button size="sm" variant="secondary" asChild>
                   <a
