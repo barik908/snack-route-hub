@@ -215,7 +215,7 @@ function Storefront() {
                     className="h-28 w-full object-cover transition group-hover:scale-105 sm:h-40"
                   />
                   <div className="p-3">
-                    <p className="truncate text-[11px] text-accent">{shopName(item.shopId)}</p>
+                    <h3 className="truncate text-sm font-semibold">{item.name}</h3>
                     <h3 className="truncate text-sm font-semibold">{item.name}</h3>
                     <div className="mt-1 flex items-center justify-between">
                       <span className="font-bold text-primary">{money(item.price)}</span>
