@@ -51,7 +51,6 @@ function Storefront() {
 
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState("all");
-  const [shopFilter, setShopFilter] = useState("all");
   const [cartOpen, setCartOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
   const [placed, setPlaced] = useState<Order | null>(null);
@@ -65,7 +64,6 @@ function Storefront() {
       const shop = shops.find((s) => s.id === i.shopId);
       if (!shop?.active) return false;
       if (cat !== "all" && i.categoryId !== cat) return false;
-      if (shopFilter !== "all" && i.shopId !== shopFilter) return false;
       if (!q) return true;
       const catName = categories.find((c) => c.id === i.categoryId)?.name ?? "";
       return (
@@ -74,7 +72,7 @@ function Storefront() {
         shop.name.toLowerCase().includes(q)
       );
     });
-  }, [items, shops, categories, query, cat, shopFilter]);
+  }, [items, shops, categories, query, cat]);
 
   const cartShopId = cart.length ? items.find((i) => i.id === cart[0]!.itemId)?.shopId : undefined;
   const subtotal = cart.reduce((s, l) => s + l.price * l.qty, 0);
