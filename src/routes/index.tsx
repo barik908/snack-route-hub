@@ -37,9 +37,8 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    checkout: search["checkout"] === "1" || search["checkout"] === true ? true : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { checkout?: boolean } =>
+    search["checkout"] === "1" || search["checkout"] === true ? { checkout: true } : {},
   component: Storefront,
 });
 
