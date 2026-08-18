@@ -83,10 +83,14 @@ function RiderPanel() {
                 <div className="min-w-0">
                   <p className="font-semibold">{o.id}</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    Pickup: {shop?.name} · {o.address}
+                    From: {shop?.name} · {shop?.ownerPhone} · {shop?.address}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    To: {o.customerName} · {o.phone} · {o.address}
                   </p>
                   <p className="text-xs font-bold text-primary">Collect {money(o.total)} cash</p>
                 </div>
+
                 <Button
                   size="sm"
                   onClick={() => {
