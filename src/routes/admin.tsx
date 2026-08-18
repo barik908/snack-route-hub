@@ -161,65 +161,27 @@ function AdminPanel() {
         </TabsContent>
 
         <TabsContent value="orders" className="mt-4 space-y-3">
-          {db.orders.length === 0 && (
-            <p className="text-sm text-muted-foreground">No orders yet.</p>
+          {activeOrders.length === 0 && (
+            <p className="text-sm text-muted-foreground">No active orders.</p>
           )}
-          {db.orders.map((o) => (
+          {activeOrders.map((o) => (
             <AdminOrderCard key={o.id} order={o} />
           ))}
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-4 space-y-3">
+          <OrderHistory orders={historyOrders} />
         </TabsContent>
 
         <TabsContent value="riders" className="mt-4 space-y-4">
           <AddRider />
           <div className="grid gap-3 sm:grid-cols-2">
             {db.riders.map((r) => (
-              <div key={r.id} className="rounded-xl border border-border bg-card p-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-semibold">{r.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {r.phone} · {r.vehicle} · {r.license}
-                    </p>
-                    <Badge className="mt-1" variant="secondary">
-                      {r.status}
-                    </Badge>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        const pw = prompt(`New password for ${r.name}`);
-                        if (!pw) return;
-                        update((d) => {
-                          d.riders = d.riders.map((x) =>
-                            x.id === r.id ? { ...x, password: pw } : x,
-                          );
-                          return d;
-                        });
-                        toast.success("Rider password reset");
-                      }}
-                    >
-                      <KeyRound className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() =>
-                        update((d) => {
-                          d.riders = d.riders.filter((x) => x.id !== r.id);
-                          return d;
-                        })
-                      }
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <RiderCard key={r.id} rider={r} />
             ))}
           </div>
         </TabsContent>
+
 
         <TabsContent value="categories" className="mt-4 space-y-3">
           <form
