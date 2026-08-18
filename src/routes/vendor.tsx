@@ -28,6 +28,9 @@ function VendorPanel() {
   const seen = useRef<number | null>(null);
 
   const pending = orders.filter((o) => o.status === "Pending");
+  const activeOrders = orders.filter((o) => o.status !== "Delivered");
+  const historyOrders = orders.filter((o) => o.status === "Delivered");
+
 
   useEffect(() => {
     if (!shopId) return;
