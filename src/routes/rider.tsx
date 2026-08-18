@@ -33,6 +33,7 @@ function RiderPanel() {
   const rider = db.riders.find((r) => r.id === riderId);
   const orders = db.orders.filter((o) => o.riderId === riderId);
   const activeOrders = orders.filter((o) => o.status !== "Delivered" && o.status !== "Cancelled");
+  const available = db.orders.filter((o) => o.status === "Ready for Pickup" && !o.riderId);
   const cash = orders
     .filter((o) => o.status === "Delivered")
     .reduce((s, o) => s + o.total, 0);
@@ -69,8 +70,50 @@ function RiderPanel() {
         </Select>
       </div>
 
+      {available.length > 0 && (
+        <div className="mb-5 space-y-2">
+          <p className="text-sm font-semibold">Available pickups</p>
+          {available.map((o) => {
+            const shop = db.shops.find((s) => s.id === o.shopId);
+            return (
+              <div
+                key={o.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-primary/50 bg-card p-3"
+              >
+                <div className="min-w-0">
+                  <p className="font-semibold">{o.id}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    Pickup: {shop?.name} · {o.address}
+                  </p>
+                  <p className="text-xs font-bold text-primary">Collect {money(o.total)} cash</p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    update((d) => {
+                      d.orders = d.orders.map((x) =>
+                        x.id === o.id && !x.riderId
+                          ? { ...x, riderId: riderId, status: "Assigned to Rider" }
+                          : x,
+                      );
+                      d.riders = d.riders.map((r) =>
+                        r.id === riderId ? { ...r, status: "On Delivery" } : r,
+                      );
+                      return d;
+                    });
+                    toast.success("Order accepted");
+                  }}
+                >
+                  Accept
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <div className="space-y-3">
-        {orders.length === 0 && (
+        {orders.length === 0 && available.length === 0 && (
           <p className="text-sm text-muted-foreground">No deliveries assigned to you yet.</p>
         )}
         {orders.map((o) => {
