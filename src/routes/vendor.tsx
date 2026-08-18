@@ -3,6 +3,8 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { PanelShell } from "@/components/tkg/PanelShell";
 import { OrderStatusSelect } from "@/components/tkg/OrderStatusSelect";
+import { OrderHistory } from "@/components/tkg/OrderHistory";
+
 import { ShopManager } from "./admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { money, playChime, useStore } from "@/lib/tkg/store";
