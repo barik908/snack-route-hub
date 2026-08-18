@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, KeyRound, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, KeyRound, Pencil, Plus, Trash2 } from "lucide-react";
 import { PanelShell } from "@/components/tkg/PanelShell";
 import { OrderStatusSelect } from "@/components/tkg/OrderStatusSelect";
+import { OrderHistory } from "@/components/tkg/OrderHistory";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { money, useStore } from "@/lib/tkg/store";
-import type { Item, Order } from "@/lib/tkg/types";
+import type { Item, Order, Rider, RiderStatus } from "@/lib/tkg/types";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -46,12 +48,18 @@ function AdminPanel() {
     (o) => o.status !== "Delivered" && o.status !== "Cancelled",
   ).length;
   const delivered = db.orders.filter((o) => o.status === "Delivered").length;
+  const activeOrders = db.orders.filter((o) => o.status !== "Delivered");
+  const historyOrders = db.orders.filter((o) => o.status === "Delivered");
 
   if (shopMode) {
     const shop = db.shops.find((s) => s.id === shopMode);
     if (!shop) return null;
     return (
-      <PanelShell title={`Shop mode · ${shop.name}`} subtitle="Direct store management" allow="admin">
+      <PanelShell
+        title={`Shop mode · ${shop.name}`}
+        subtitle="Direct store management"
+        allow="admin"
+      >
         <Button variant="secondary" size="sm" className="mb-4" onClick={() => setShopMode(null)}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to stores
         </Button>
@@ -73,6 +81,7 @@ function AdminPanel() {
         <TabsList className="w-full overflow-x-auto">
           <TabsTrigger value="stores">Stores</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="riders">Riders</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -114,7 +123,9 @@ function AdminPanel() {
                       checked={shop.active}
                       onCheckedChange={(v) =>
                         update((d) => {
-                          d.shops = d.shops.map((s) => (s.id === shop.id ? { ...s, active: v } : s));
+                          d.shops = d.shops.map((s) =>
+                            s.id === shop.id ? { ...s, active: v } : s,
+                          );
                           return d;
                         })
                       }
@@ -159,62 +170,23 @@ function AdminPanel() {
         </TabsContent>
 
         <TabsContent value="orders" className="mt-4 space-y-3">
-          {db.orders.length === 0 && (
-            <p className="text-sm text-muted-foreground">No orders yet.</p>
+          {activeOrders.length === 0 && (
+            <p className="text-sm text-muted-foreground">No active orders.</p>
           )}
-          {db.orders.map((o) => (
+          {activeOrders.map((o) => (
             <AdminOrderCard key={o.id} order={o} />
           ))}
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-4 space-y-3">
+          <OrderHistory orders={historyOrders} />
         </TabsContent>
 
         <TabsContent value="riders" className="mt-4 space-y-4">
           <AddRider />
           <div className="grid gap-3 sm:grid-cols-2">
             {db.riders.map((r) => (
-              <div key={r.id} className="rounded-xl border border-border bg-card p-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-semibold">{r.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {r.phone} · {r.vehicle} · {r.license}
-                    </p>
-                    <Badge className="mt-1" variant="secondary">
-                      {r.status}
-                    </Badge>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        const pw = prompt(`New password for ${r.name}`);
-                        if (!pw) return;
-                        update((d) => {
-                          d.riders = d.riders.map((x) =>
-                            x.id === r.id ? { ...x, password: pw } : x,
-                          );
-                          return d;
-                        });
-                        toast.success("Rider password reset");
-                      }}
-                    >
-                      <KeyRound className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() =>
-                        update((d) => {
-                          d.riders = d.riders.filter((x) => x.id !== r.id);
-                          return d;
-                        })
-                      }
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <RiderCard key={r.id} rider={r} />
             ))}
           </div>
         </TabsContent>
@@ -483,9 +455,7 @@ export function ShopManager({ shopId }: { shopId: string }) {
   const { db, update } = useStore();
   const items = db.items.filter((i) => i.shopId === shopId);
   const orders = db.orders.filter((o) => o.shopId === shopId);
-  const sales = orders
-    .filter((o) => o.status === "Delivered")
-    .reduce((s, o) => s + o.total, 0);
+  const sales = orders.filter((o) => o.status === "Delivered").reduce((s, o) => s + o.total, 0);
 
   const patch = (id: string, p: Partial<Item>) =>
     update((d) => {
@@ -601,6 +571,131 @@ export function ShopManager({ shopId }: { shopId: string }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function RiderCard({ rider }: { rider: Rider }) {
+  const { db, update } = useStore();
+  const [open, setOpen] = useState(false);
+  const patch = (p: Partial<Rider>) =>
+    update((d) => {
+      d.riders = d.riders.map((x) => (x.id === rider.id ? { ...x, ...p } : x));
+      return d;
+    });
+
+  const orders = db.orders.filter((o) => o.riderId === rider.id);
+  const deliveredCount = orders.filter((o) => o.status === "Delivered").length;
+  const cash = orders.filter((o) => o.status === "Delivered").reduce((s, o) => s + o.total, 0);
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-semibold">{rider.name}</p>
+          <p className="text-xs text-muted-foreground">
+            {rider.phone} · {rider.vehicle} · {rider.license}
+          </p>
+          <div className="mt-1 flex flex-wrap gap-2">
+            <Badge variant="secondary">{rider.status}</Badge>
+            <Badge variant="secondary">{deliveredCount} delivered</Badge>
+            <Badge variant="secondary">{money(cash)} collected</Badge>
+          </div>
+        </div>
+        <div className="flex gap-1">
+          <Button size="sm" variant="ghost" onClick={() => setOpen((v) => !v)}>
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() =>
+              update((d) => {
+                d.riders = d.riders.filter((x) => x.id !== rider.id);
+                return d;
+              })
+            }
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </div>
+
+      {open && (
+        <div className="mt-3 grid gap-2 border-t border-border pt-3 sm:grid-cols-2">
+          <Labeled label="Name">
+            <Input
+              className="h-8"
+              value={rider.name}
+              onChange={(e) => patch({ name: e.target.value })}
+            />
+          </Labeled>
+          <Labeled label="Phone">
+            <Input
+              className="h-8"
+              value={rider.phone}
+              onChange={(e) => patch({ phone: e.target.value })}
+            />
+          </Labeled>
+          <Labeled label="Vehicle">
+            <Input
+              className="h-8"
+              value={rider.vehicle}
+              onChange={(e) => patch({ vehicle: e.target.value })}
+            />
+          </Labeled>
+          <Labeled label="License / ID">
+            <Input
+              className="h-8"
+              value={rider.license}
+              onChange={(e) => patch({ license: e.target.value })}
+            />
+          </Labeled>
+          <Labeled label="Password">
+            <Input
+              className="h-8"
+              value={rider.password}
+              onChange={(e) => patch({ password: e.target.value })}
+            />
+          </Labeled>
+          <Labeled label="Status">
+            <Select value={rider.status} onValueChange={(v) => patch({ status: v as RiderStatus })}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Available">Available</SelectItem>
+                <SelectItem value="On Delivery">On Delivery</SelectItem>
+                <SelectItem value="Offline">Offline</SelectItem>
+              </SelectContent>
+            </Select>
+          </Labeled>
+          <div className="sm:col-span-2">
+            <p className="mb-1 text-xs font-semibold">Assigned orders</p>
+            {orders.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No orders assigned.</p>
+            ) : (
+              <div className="space-y-1">
+                {orders.map((o) => (
+                  <p key={o.id} className="text-xs text-muted-foreground">
+                    {o.id} · {o.customerName} · {money(o.total)} ·{" "}
+                    <span className="text-primary">{o.status}</span>
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Labeled({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <Label className="text-xs">{label}</Label>
+      {children}
     </div>
   );
 }

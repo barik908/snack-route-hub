@@ -18,9 +18,15 @@ export const Route = createFileRoute("/rider")({
   head: () => ({
     meta: [
       { title: "Rider Panel — TKG Snacks" },
-      { name: "description", content: "Delivery rider dashboard with assigned orders and navigation." },
+      {
+        name: "description",
+        content: "Delivery rider dashboard with assigned orders and navigation.",
+      },
       { property: "og:title", content: "Rider Panel — TKG Snacks" },
-      { property: "og:description", content: "Track assigned deliveries, COD amounts and navigation." },
+      {
+        property: "og:description",
+        content: "Track assigned deliveries, COD amounts and navigation.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -34,9 +40,7 @@ function RiderPanel() {
   const orders = db.orders.filter((o) => o.riderId === riderId);
   const activeOrders = orders.filter((o) => o.status !== "Delivered" && o.status !== "Cancelled");
   const available = db.orders.filter((o) => o.status === "Ready for Pickup" && !o.riderId);
-  const cash = orders
-    .filter((o) => o.status === "Delivered")
-    .reduce((s, o) => s + o.total, 0);
+  const cash = orders.filter((o) => o.status === "Delivered").reduce((s, o) => s + o.total, 0);
 
   return (
     <PanelShell title={rider?.name ?? "Rider"} subtitle="Delivery dashboard" allow="rider">
@@ -83,10 +87,14 @@ function RiderPanel() {
                 <div className="min-w-0">
                   <p className="font-semibold">{o.id}</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    Pickup: {shop?.name} · {o.address}
+                    From: {shop?.name} · {shop?.ownerPhone} · {shop?.address}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    To: {o.customerName} · {o.phone} · {o.address}
                   </p>
                   <p className="text-xs font-bold text-primary">Collect {money(o.total)} cash</p>
                 </div>
+
                 <Button
                   size="sm"
                   onClick={() => {
@@ -126,22 +134,53 @@ function RiderPanel() {
                   {o.status}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground">Pickup: {shop?.name}</p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <div className="rounded-lg border border-border p-2">
+                  <p className="text-[11px] font-semibold text-accent">FROM · Restaurant</p>
+                  <p className="text-sm font-medium">{shop?.name}</p>
+                  <p className="text-xs text-muted-foreground">{shop?.ownerPhone}</p>
+                  <p className="text-xs text-muted-foreground">{shop?.address}</p>
+                  {shop && (
+                    <div className="mt-2 flex gap-2">
+                      <Button size="sm" variant="secondary" asChild>
+                        <a href={`tel:${shop.ownerPhone}`}>
+                          <Phone className="mr-2 h-3 w-3" /> Call shop
+                        </a>
+                      </Button>
+                      <Button size="sm" variant="secondary" asChild>
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                            `${shop.address} ${db.settings.location}`,
+                          )}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <Map className="mr-2 h-3 w-3" /> Pickup map
+                        </a>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-lg border border-border p-2">
+                  <p className="text-[11px] font-semibold text-accent">TO · Customer</p>
+                  <p className="text-sm font-medium">{o.customerName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {o.phone}
+                    {o.phone2 ? ` / ${o.phone2}` : ""}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {o.address}
+                    {o.landmark ? ` (near ${o.landmark})` : ""}
+                  </p>
+                </div>
+              </div>
               <div className="mt-2 space-y-0.5 text-sm">
-                <p className="font-medium">{o.customerName}</p>
-                <p className="text-xs text-muted-foreground">
-                  {o.phone}
-                  {o.phone2 ? ` / ${o.phone2}` : ""}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {o.address}
-                  {o.landmark ? ` (near ${o.landmark})` : ""}
-                </p>
                 <p className="text-xs text-muted-foreground">
                   {o.lines.map((l) => `${l.qty}x ${l.name}`).join(", ")}
                 </p>
                 <p className="font-bold text-primary">Collect {money(o.total)} cash</p>
               </div>
+
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button size="sm" variant="secondary" asChild>
                   <a

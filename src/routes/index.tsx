@@ -1,6 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Lock, Store, Bike, Search, ShoppingCart, Star, Plus, Minus, Phone, MapPin, Trash2 } from "lucide-react";
+import {
+  Lock,
+  Store,
+  Bike,
+  Search,
+  ShoppingCart,
+  Star,
+  Plus,
+  Minus,
+  Phone,
+  MapPin,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,7 +63,6 @@ function Storefront() {
 
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState("all");
-  const [shopFilter, setShopFilter] = useState("all");
   const [cartOpen, setCartOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
   const [placed, setPlaced] = useState<Order | null>(null);
@@ -65,7 +76,6 @@ function Storefront() {
       const shop = shops.find((s) => s.id === i.shopId);
       if (!shop?.active) return false;
       if (cat !== "all" && i.categoryId !== cat) return false;
-      if (shopFilter !== "all" && i.shopId !== shopFilter) return false;
       if (!q) return true;
       const catName = categories.find((c) => c.id === i.categoryId)?.name ?? "";
       return (
@@ -74,7 +84,7 @@ function Storefront() {
         shop.name.toLowerCase().includes(q)
       );
     });
-  }, [items, shops, categories, query, cat, shopFilter]);
+  }, [items, shops, categories, query, cat]);
 
   const cartShopId = cart.length ? items.find((i) => i.id === cart[0]!.itemId)?.shopId : undefined;
   const subtotal = cart.reduce((s, l) => s + l.price * l.qty, 0);
@@ -95,8 +105,7 @@ function Storefront() {
     }
     setCart((prev) => {
       const found = prev.find((l) => l.itemId === item.id);
-      if (found)
-        return prev.map((l) => (l.itemId === item.id ? { ...l, qty: l.qty + 1 } : l));
+      if (found) return prev.map((l) => (l.itemId === item.id ? { ...l, qty: l.qty + 1 } : l));
       return [...prev, { itemId: item.id, name: item.name, price: item.price, qty: 1 }];
     });
     toast.success(`${item.name} added to cart`);
@@ -137,7 +146,11 @@ function Storefront() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               {settings.logoUrl ? (
-                <img src={settings.logoUrl} alt="Logo" className="h-9 w-9 rounded-lg object-cover" />
+                <img
+                  src={settings.logoUrl}
+                  alt="Logo"
+                  className="h-9 w-9 rounded-lg object-cover"
+                />
               ) : (
                 <div className="grid h-9 w-9 place-items-center rounded-lg brand-gradient text-lg">
                   🍔
@@ -182,25 +195,6 @@ function Storefront() {
               />
             ))}
           </div>
-          <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-            <CatChip
-              active={shopFilter === "all"}
-              onClick={() => setShopFilter("all")}
-              label="All restaurants"
-              subtle
-            />
-            {shops
-              .filter((s) => s.active)
-              .map((s) => (
-                <CatChip
-                  key={s.id}
-                  active={shopFilter === s.id}
-                  onClick={() => setShopFilter(s.id)}
-                  label={s.name}
-                  subtle
-                />
-              ))}
-          </div>
         </div>
       </header>
 
@@ -221,11 +215,7 @@ function Storefront() {
                 key={item.id}
                 className="group overflow-hidden rounded-xl border border-border bg-card transition hover:border-primary/60"
               >
-                <Link
-                  to="/item/$id"
-                  params={{ id: item.id }}
-                  className="block w-full text-left"
-                >
+                <Link to="/item/$id" params={{ id: item.id }} className="block w-full text-left">
                   <img
                     src={item.image}
                     alt={item.name}
@@ -233,8 +223,8 @@ function Storefront() {
                     className="h-28 w-full object-cover transition group-hover:scale-105 sm:h-40"
                   />
                   <div className="p-3">
-                    <p className="truncate text-[11px] text-accent">{shopName(item.shopId)}</p>
                     <h3 className="truncate text-sm font-semibold">{item.name}</h3>
+
                     <div className="mt-1 flex items-center justify-between">
                       <span className="font-bold text-primary">{money(item.price)}</span>
                       <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -309,11 +299,21 @@ function Storefront() {
                       <p className="text-xs text-muted-foreground">{money(l.price)}</p>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button size="icon" variant="secondary" className="h-7 w-7" onClick={() => setQty(l.itemId, -1)}>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-7 w-7"
+                        onClick={() => setQty(l.itemId, -1)}
+                      >
                         <Minus className="h-3 w-3" />
                       </Button>
                       <span className="w-6 text-center text-sm">{l.qty}</span>
-                      <Button size="icon" variant="secondary" className="h-7 w-7" onClick={() => setQty(l.itemId, 1)}>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-7 w-7"
+                        onClick={() => setQty(l.itemId, 1)}
+                      >
                         <Plus className="h-3 w-3" />
                       </Button>
                     </div>

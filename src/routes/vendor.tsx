@@ -3,6 +3,8 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { PanelShell } from "@/components/tkg/PanelShell";
 import { OrderStatusSelect } from "@/components/tkg/OrderStatusSelect";
+import { OrderHistory } from "@/components/tkg/OrderHistory";
+
 import { ShopManager } from "./admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { money, playChime, useStore } from "@/lib/tkg/store";
@@ -28,6 +30,8 @@ function VendorPanel() {
   const seen = useRef<number | null>(null);
 
   const pending = orders.filter((o) => o.status === "Pending");
+  const activeOrders = orders.filter((o) => o.status !== "Delivered");
+  const historyOrders = orders.filter((o) => o.status === "Delivered");
 
   useEffect(() => {
     if (!shopId) return;
@@ -65,11 +69,14 @@ function VendorPanel() {
       <Tabs defaultValue="orders">
         <TabsList>
           <TabsTrigger value="orders">Live orders</TabsTrigger>
+          <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="menu">Menu & stock</TabsTrigger>
         </TabsList>
         <TabsContent value="orders" className="mt-4 space-y-3">
-          {orders.length === 0 && <p className="text-sm text-muted-foreground">No orders yet.</p>}
-          {orders.map((o) => (
+          {activeOrders.length === 0 && (
+            <p className="text-sm text-muted-foreground">No active orders.</p>
+          )}
+          {activeOrders.map((o) => (
             <div key={o.id} className="rounded-xl border border-border bg-card p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
@@ -96,6 +103,10 @@ function VendorPanel() {
             </div>
           ))}
         </TabsContent>
+        <TabsContent value="history" className="mt-4">
+          <OrderHistory orders={historyOrders} />
+        </TabsContent>
+
         <TabsContent value="menu" className="mt-4">
           {shopId && <ShopManager shopId={shopId} />}
         </TabsContent>
