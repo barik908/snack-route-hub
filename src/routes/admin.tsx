@@ -73,10 +73,12 @@ function AdminPanel() {
         <TabsList className="w-full overflow-x-auto">
           <TabsTrigger value="stores">Stores</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="riders">Riders</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="stores" className="mt-4 space-y-4">
           <AddShop />
