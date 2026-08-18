@@ -216,7 +216,7 @@ function Storefront() {
                   />
                   <div className="p-3">
                     <h3 className="truncate text-sm font-semibold">{item.name}</h3>
-                    <h3 className="truncate text-sm font-semibold">{item.name}</h3>
+
                     <div className="mt-1 flex items-center justify-between">
                       <span className="font-bold text-primary">{money(item.price)}</span>
                       <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
