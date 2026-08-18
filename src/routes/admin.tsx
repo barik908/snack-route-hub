@@ -46,6 +46,9 @@ function AdminPanel() {
     (o) => o.status !== "Delivered" && o.status !== "Cancelled",
   ).length;
   const delivered = db.orders.filter((o) => o.status === "Delivered").length;
+  const activeOrders = db.orders.filter((o) => o.status !== "Delivered");
+  const historyOrders = db.orders.filter((o) => o.status === "Delivered");
+
 
   if (shopMode) {
     const shop = db.shops.find((s) => s.id === shopMode);
