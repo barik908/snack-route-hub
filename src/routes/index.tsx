@@ -182,27 +182,9 @@ function Storefront() {
               />
             ))}
           </div>
-          <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-            <CatChip
-              active={shopFilter === "all"}
-              onClick={() => setShopFilter("all")}
-              label="All restaurants"
-              subtle
-            />
-            {shops
-              .filter((s) => s.active)
-              .map((s) => (
-                <CatChip
-                  key={s.id}
-                  active={shopFilter === s.id}
-                  onClick={() => setShopFilter(s.id)}
-                  label={s.name}
-                  subtle
-                />
-              ))}
-          </div>
         </div>
       </header>
+
 
       <section className="mx-auto max-w-6xl px-4 py-5">
         <div className="mb-5 overflow-hidden rounded-2xl brand-gradient p-5 glow">
