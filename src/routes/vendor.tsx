@@ -65,11 +65,14 @@ function VendorPanel() {
       <Tabs defaultValue="orders">
         <TabsList>
           <TabsTrigger value="orders">Live orders</TabsTrigger>
+          <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="menu">Menu & stock</TabsTrigger>
         </TabsList>
         <TabsContent value="orders" className="mt-4 space-y-3">
-          {orders.length === 0 && <p className="text-sm text-muted-foreground">No orders yet.</p>}
-          {orders.map((o) => (
+          {activeOrders.length === 0 && (
+            <p className="text-sm text-muted-foreground">No active orders.</p>
+          )}
+          {activeOrders.map((o) => (
             <div key={o.id} className="rounded-xl border border-border bg-card p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
@@ -96,6 +99,10 @@ function VendorPanel() {
             </div>
           ))}
         </TabsContent>
+        <TabsContent value="history" className="mt-4">
+          <OrderHistory orders={historyOrders} />
+        </TabsContent>
+
         <TabsContent value="menu" className="mt-4">
           {shopId && <ShopManager shopId={shopId} />}
         </TabsContent>
